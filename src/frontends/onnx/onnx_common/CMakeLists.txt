@@ -27,10 +27,15 @@ target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${ONNX_COMMON
 
 target_link_libraries(${TARGET_NAME} PRIVATE openvino::runtime)
 
+find_package(Protobuf)
 if(ONNX_USE_LITE_PROTO)
-    link_system_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LITE_LIBRARIES})
+    set(Protobuf_LITE_LIBRARIES protobuf::libprotobuf)
+    # link_system_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LITE_LIBRARIES})
+    target_link_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LITE_LIBRARIES})
 else()
-    link_system_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LIBRARIES})
+    set(Protobuf_LIBRARIES protobuf::libprotobuf)
+    # link_system_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LIBRARIES})
+    target_link_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LIBRARIES})
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE ${ONNX_COMMON_SRC_DIR})

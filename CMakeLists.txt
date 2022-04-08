@@ -17,6 +17,9 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "CMake build type" FORCE)
 endif()
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 find_package(IEDevScripts REQUIRED
              PATHS "${OpenVINO_SOURCE_DIR}/cmake/developer_package"
              NO_CMAKE_FIND_ROOT_PATH
@@ -104,7 +107,7 @@ if (ENABLE_TESTS OR ENABLE_TEMPLATE)
     add_subdirectory(docs/template_plugin/backend)
 endif()
 include(cmake/extra_modules.cmake)
-add_subdirectory(docs)
+# add_subdirectory(docs)
 add_subdirectory(tools)
 add_subdirectory(scripts)
 add_subdirectory(licensing)
