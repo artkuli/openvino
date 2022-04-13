@@ -100,7 +100,7 @@ include(cmake/test_model_zoo.cmake)
 
 add_subdirectory(thirdparty)
 add_subdirectory(src)
-add_subdirectory(samples)
+# add_subdirectory(samples)
 
 # Enable interpreter backend
 if (ENABLE_TESTS OR ENABLE_TEMPLATE)
@@ -110,7 +110,7 @@ include(cmake/extra_modules.cmake)
 # add_subdirectory(docs)
 add_subdirectory(tools)
 add_subdirectory(scripts)
-add_subdirectory(licensing)
+# add_subdirectory(licensing)
 
 #
 # CPack
