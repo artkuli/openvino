@@ -599,18 +599,14 @@ target_link_libraries(ov_core_unit_tests PRIVATE ngraph_test_util
 if (ENABLE_OV_ONNX_FRONTEND)
     # It's needed by onnx_import_library.cpp and onnx_import_exceptions.cpp tests to include onnx_pb.h.
     # Not linking statically to libprotobuf (linked into libonnx) avoids false-failing onnx_editor tests.
-    if(CONAN_BUILD) 
-        message("CONAN build")
-    else()
-        target_include_directories(ov_core_unit_tests
-            SYSTEM PRIVATE
-                $<TARGET_PROPERTY:onnx,INTERFACE_INCLUDE_DIRECTORIES>
-                $<TARGET_PROPERTY:onnx_proto,INTERFACE_INCLUDE_DIRECTORIES>
-                ${Protobuf_INCLUDE_DIRS})
-        target_compile_definitions(ov_core_unit_tests
-            PRIVATE $<TARGET_PROPERTY:onnx,INTERFACE_COMPILE_DEFINITIONS>)
-        target_compile_definitions(ov_core_unit_tests PRIVATE ENABLE_OV_ONNX_FRONTEND)
-    endif()
+    target_include_directories(ov_core_unit_tests
+        SYSTEM PRIVATE
+            $<TARGET_PROPERTY:onnx,INTERFACE_INCLUDE_DIRECTORIES>
+            $<TARGET_PROPERTY:onnx_proto,INTERFACE_INCLUDE_DIRECTORIES>
+            ${Protobuf_INCLUDE_DIRS})
+    target_compile_definitions(ov_core_unit_tests
+        PRIVATE $<TARGET_PROPERTY:onnx,INTERFACE_COMPILE_DEFINITIONS>)
+    target_compile_definitions(ov_core_unit_tests PRIVATE ENABLE_OV_ONNX_FRONTEND)
 endif()
 
 if (OV_COMPILER_IS_CLANG)

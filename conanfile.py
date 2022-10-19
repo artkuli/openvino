@@ -1,5 +1,5 @@
-from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
+from conans import ConanFile, CMake
+# from conan.tools.cmake import CMakeToolchain
 
 
 class OpenvinoConan(ConanFile):
@@ -16,22 +16,27 @@ class OpenvinoConan(ConanFile):
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True}
+    default_options = {"shared": True, "fPIC": True}
     generators = ["CMakeToolchain", "CMakeDeps", "cmake_paths"]
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "cmake/*",  "ngraph/*", "scripts/*", "src/*", "thirdparty/*", "tools/*", "CMakeLists.txt"
+    exports_sources = "cmake/*",  "ngraph/*", "scripts/*", "src/*", "thirdparty/*", "tools/*", "samples/*", "docs/*", "licensing/*", "tests/*", "CMakeLists.txt"
 
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
 
-    def layout(self):
-        cmake_layout(self)
+    def requirements(self):
+        pass
+        # self.requires("protobuf/3.21.4")
+    #     self.requires("onnx/1.11.0")
 
-    def generate(self):
-        tc = CMakeToolchain(self)
-        tc.generate()
+    # def layout(self):
+    #     cmake_layout(self)
+
+    # def generate(self):
+    #     tc = CMakeToolchain(self)
+    #     tc.generate()
 
     def build(self):
         cmake = CMake(self)
@@ -53,12 +58,10 @@ class OpenvinoConan(ConanFile):
         cmake.definitions["ENABLE_NCC_STYLE"]="OFF" 
         cmake.definitions["ENABLE_OV_PADDLE_FRONTEND"]="OFF" 
         cmake.definitions["ENABLE_OV_TF_FRONTEND"]="OFF" 
-        cmake.definitions["ENABLE_TESTS"]="OFF"
+        cmake.definitions["ENABLE_OV_ONNX_FRONTEND"]="OFF" 
         cmake.definitions["CMAKE_EXPORT_NO_PACKAGE_REGISTRY"] = "OFF"
         cmake.definitions["ENABLE_TEMPLATE"] = "OFF"
         cmake.definitions["ENABLE_INTEL_MYRIAD_COMMON"] = "OFF"
-        cmake.definitions["CMAKE_CXX_FLAGS"] = "-Wno-error=undef -Wno-error=suggest-override"
-        cmake.definitions["CMAKE_C_FLAGS"] = "-Wno-error=undef -Wno-error=suggest-override"
         cmake.configure()
         cmake.build()
 

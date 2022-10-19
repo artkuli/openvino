@@ -5,7 +5,7 @@
 # C++ tools
 #
 
-# add_subdirectory(compile_tool)
+add_subdirectory(compile_tool)
 
 if(ENABLE_SAMPLES)
     add_subdirectory(legacy/benchmark_app)
