@@ -127,7 +127,7 @@ endif()
              set_property(TARGET ${target} PROPERTY IMPORTED_GLOBAL TRUE)
          endforeach()
      else()
-         # add_subdirectory(protobuf EXCLUDE_FROM_ALL)
+         add_subdirectory(protobuf EXCLUDE_FROM_ALL)
          find_package(Protobuf REQUIRED)
          message("target===${target}"${target})
          set(Protobuf_LITE_LIBRARIES protobuf::libprotobuf)
@@ -159,7 +159,7 @@ endif()
 # ONNX
 #
 
-if(ENABLE_OV_ONNX_FRONTEND AND NOT CONAN_EXPORTED)
+if(ENABLE_OV_ONNX_FRONTEND)
      add_subdirectory(onnx)
 endif()
 

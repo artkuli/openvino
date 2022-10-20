@@ -26,9 +26,8 @@ class OpenvinoConan(ConanFile):
         if self.settings.os == "Windows":
             del self.options.fPIC
 
-    def requirements(self):
-        pass
-        # self.requires("protobuf/3.21.4")
+    # def requirements(self):
+    #     self.requires("protobuf/3.21.4")
     #     self.requires("onnx/1.11.0")
 
     # def layout(self):
@@ -53,12 +52,12 @@ class OpenvinoConan(ConanFile):
         cmake.definitions["ENABLE_PROFILING_ITT"]="OFF" 
         cmake.definitions["ENABLE_SAMPLES"]="OFF" 
         cmake.definitions["ENABLE_PYTHON"]="OFF" 
-        cmake.definitions["PYTHON_EXECUTABLE"] ="/usr/bin/python3" 
+        # cmake.definitions["PYTHON_EXECUTABLE"] ="/usr/bin/python3" 
         cmake.definitions["ENABLE_CPPLINT"]="OFF" 
         cmake.definitions["ENABLE_NCC_STYLE"]="OFF" 
         cmake.definitions["ENABLE_OV_PADDLE_FRONTEND"]="OFF" 
         cmake.definitions["ENABLE_OV_TF_FRONTEND"]="OFF" 
-        cmake.definitions["ENABLE_OV_ONNX_FRONTEND"]="OFF" 
+        cmake.definitions["ENABLE_OV_ONNX_FRONTEND"]="ON" 
         cmake.definitions["CMAKE_EXPORT_NO_PACKAGE_REGISTRY"] = "OFF"
         cmake.definitions["ENABLE_TEMPLATE"] = "OFF"
         cmake.definitions["ENABLE_INTEL_MYRIAD_COMMON"] = "OFF"
