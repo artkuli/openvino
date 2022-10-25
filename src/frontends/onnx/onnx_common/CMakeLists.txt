@@ -29,7 +29,6 @@ target_link_libraries(${TARGET_NAME} PRIVATE openvino::runtime)
 
 if(ONNX_USE_LITE_PROTO)
         link_system_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LITE_LIBRARIES})
-
 else()
         link_system_libraries(${TARGET_NAME} PUBLIC onnx_proto onnx ${Protobuf_LIBRARIES})
 endif()

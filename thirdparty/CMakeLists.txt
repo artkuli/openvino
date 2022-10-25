@@ -61,7 +61,6 @@ else()
         openvino_developer_export_targets(COMPONENT openvino_common TARGETS pugixml::static)
         ov_install_static_lib(pugixml-static openvino_common)
     endfunction()
-
     ie_build_pugixml()
 endif()
 
@@ -128,12 +127,6 @@ endif()
          endforeach()
      else()
          add_subdirectory(protobuf EXCLUDE_FROM_ALL)
-         find_package(Protobuf REQUIRED)
-         message("target===${target}"${target})
-         set(Protobuf_LITE_LIBRARIES protobuf::libprotobuf)
-         set(Protobuf_LIBRARIES protobuf::libprotobuf)
-         set(SYSTEM_PROTOC protobuf::protoc)
-         # target_link_libraries(${target} protobuf::libprotobuf)
      endif()
 
      # forward variables used in the other places
@@ -168,12 +161,13 @@ endif()
 #
 
 add_subdirectory(json)
-
-openvino_developer_export_targets(COMPONENT openvino_common
+if (NOT CONAN_EXPORTED)
+    openvino_developer_export_targets(COMPONENT openvino_common
                                   TARGETS nlohmann_json nlohmann_json_schema_validator)
 
-ov_install_static_lib(nlohmann_json openvino_common)
-ov_install_static_lib(nlohmann_json_schema_validator openvino_common)
+    ov_install_static_lib(nlohmann_json::nlohmann_json openvino_common)
+    ov_install_static_lib(nlohmann_json_schema_validator openvino_common)
+endif()
 
 #
 # Install
