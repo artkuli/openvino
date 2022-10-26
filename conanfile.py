@@ -3,20 +3,19 @@ from conans import ConanFile, CMake
 
 class OpenvinoConan(ConanFile):
     name = "openvino"
-    version = "2022.2"
+    version = "2022.3"
 
-    # Optional metadata
-    license = "<Put the package license here>"
-    author = "<Put your name here> <And your email here>"
-    url = "<Package recipe repository url here, for issues about the package>"
-    description = "<Description of OpenVINO here>"
-    topics = ("<Put some tag here>", "<here>", "<and here>")
+    # metadata
+    license = "Apache 2.0"
+    author = "Intel Corporation"
+    url = "https://github.com/openvinotoolkit/openvino"
+    description = "OpenVINO™ is an open-sorce toolkit for optimizing and deploying AI inference"
+    topics = ("deep-learning", "artificial-intelligence", "framework")
 
-    # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": True, "fPIC": True}
-    generators = ["cmake", "cmake_find_package", "CMakeDeps", "cmake_paths", "CMakeToolchain"]
+    default_options = {"shared": False, "fPIC": True}
+    generators = ["cmake", "cmake_find_package", "CMakeDeps", "cmake_paths"]
 
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "cmake/*",  "ngraph/*", "scripts/*", "src/*", "thirdparty/*", "tools/*", "samples/*", "docs/*", "licensing/*", "tests/*", "CMakeLists.txt"
@@ -30,6 +29,7 @@ class OpenvinoConan(ConanFile):
         self.requires("json-schema-validator/2.1.0")
         self.requires("pugixml/1.11")
         self.requires("zlib/1.2.12")
+        self.requires("onnx/1.11.0")
 
     def build(self):
         cmake = CMake(self)
