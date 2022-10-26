@@ -29,13 +29,7 @@ class OpenvinoConan(ConanFile):
         # Don't need nlohmann_json because json-schema-validator requires it
         self.requires("json-schema-validator/2.1.0")
         self.requires("pugixml/1.11")
-
-    # def layout(self):
-    #     cmake_layout(self)
-
-    # def generate(self):
-    #     tc = CMakeToolchain(self)
-    #     tc.generate()
+        self.requires("zlib/1.2.12")
 
     def build(self):
         cmake = CMake(self)

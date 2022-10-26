@@ -37,9 +37,12 @@ if(NOT CMAKE_CROSSCOMPILING)
         endif()
     endif()
 endif()
-
-if(NOT zlib_FOUND)
-    add_subdirectory(zlib EXCLUDE_FROM_ALL)
+if (CONAN_EXPORTED) 
+    find_package(zlib)
+else()
+    if(NOT zlib_FOUND)
+        add_subdirectory(zlib EXCLUDE_FROM_ALL)
+    endif()
 endif()
 
 #
