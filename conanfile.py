@@ -28,6 +28,7 @@ class OpenvinoConan(ConanFile):
     def requirements(self):
         # Don't need nlohmann_json because json-schema-validator requires it
         self.requires("json-schema-validator/2.1.0")
+        self.requires("pugixml/1.11")
 
     # def layout(self):
     #     cmake_layout(self)
@@ -48,13 +49,13 @@ class OpenvinoConan(ConanFile):
         cmake.definitions["ENABLE_BEH_TESTS"]="OFF" 
         cmake.definitions["ENABLE_FUNCTIONAL_TESTS"]="OFF" 
         cmake.definitions["ENABLE_PROFILING_ITT"]="OFF" 
-        cmake.definitions["ENABLE_SAMPLES"]="OFF" 
+        cmake.definitions["ENABLE_SAMPLES"]="ON" 
         cmake.definitions["ENABLE_PYTHON"]="OFF" 
         cmake.definitions["ENABLE_CPPLINT"]="OFF" 
         cmake.definitions["ENABLE_NCC_STYLE"]="OFF" 
-        cmake.definitions["ENABLE_OV_PADDLE_FRONTEND"]="OFF" 
-        cmake.definitions["ENABLE_OV_TF_FRONTEND"]="OFF" 
-        cmake.definitions["ENABLE_OV_ONNX_FRONTEND"]="OFF" 
+        cmake.definitions["ENABLE_OV_PADDLE_FRONTEND"]="ON" 
+        cmake.definitions["ENABLE_OV_TF_FRONTEND"]="ON" 
+        cmake.definitions["ENABLE_OV_ONNX_FRONTEND"]="ON" 
         cmake.definitions["CMAKE_EXPORT_NO_PACKAGE_REGISTRY"] = "OFF"
         cmake.definitions["ENABLE_TEMPLATE"] = "OFF"
         cmake.definitions["ENABLE_INTEL_MYRIAD_COMMON"] = "OFF"

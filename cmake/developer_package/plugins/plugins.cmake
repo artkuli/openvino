@@ -63,7 +63,9 @@ function(ie_add_plugin)
         else()
             set(library_type STATIC)
         endif()
-
+        if (CONAN_EXPORTED)
+            find_package(PugiXML REQUIRED)
+        endif()
         add_library(${IE_PLUGIN_NAME} ${library_type} ${input_files})
 
         target_compile_definitions(${IE_PLUGIN_NAME} PRIVATE IMPLEMENT_INFERENCE_ENGINE_PLUGIN)

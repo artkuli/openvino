@@ -56,6 +56,10 @@ ov_install_static_lib(ov_core_dev core)
 # Create static or shared library depending on BUILD_SHARED_LIBS
 #
 
+if (CONAN_EXPORTED)
+    find_package(PugiXML REQUIRED)
+endif()
+
 add_library(ngraph_obj OBJECT ${LIBRARY_SRC} ${PUBLIC_HEADERS})
 
 target_compile_definitions(ngraph_obj PRIVATE IMPLEMENT_OPENVINO_API)

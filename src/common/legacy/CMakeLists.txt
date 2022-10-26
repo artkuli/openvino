@@ -52,6 +52,10 @@ add_library(${TARGET_NAME} STATIC EXCLUDE_FROM_ALL
     ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp
     $<TARGET_OBJECTS:${TARGET_NAME}_obj>)
 
+if (CONAN_EXPORTED)
+    find_package(PugiXML REQUIRED)
+endif()
+
 target_link_libraries(${TARGET_NAME} PUBLIC openvino::runtime
                                      PRIVATE pugixml::static openvino::itt openvino::runtime::dev)
 

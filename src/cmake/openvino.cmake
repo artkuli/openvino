@@ -26,12 +26,22 @@ target_include_directories(${TARGET_NAME} PUBLIC
     $<BUILD_INTERFACE:${OpenVINO_SOURCE_DIR}/src/inference/include>
     $<BUILD_INTERFACE:${OpenVINO_SOURCE_DIR}/src/inference/include/ie>)
 
-target_link_libraries(${TARGET_NAME} PRIVATE ngraph_reference
-                                             ngraph_builders
-                                             ov_shape_inference
-                                             pugixml::static
-                                             ${CMAKE_DL_LIBS}
-                                             Threads::Threads)
+if (CONAN_EXPORTED)
+    find_package(PugiXML REQUIRED)
+    target_link_libraries(${TARGET_NAME} PRIVATE ngraph_reference
+                                                ngraph_builders
+                                                ov_shape_inference
+                                                pugixml::pugixml
+                                                ${CMAKE_DL_LIBS}
+                                                Threads::Threads)
+else()
+    target_link_libraries(${TARGET_NAME} PRIVATE ngraph_reference
+                                                ngraph_builders
+                                                ov_shape_inference
+                                                pugixml::static
+                                                ${CMAKE_DL_LIBS}
+                                                Threads::Threads)
+endif()
 
 if (TBBBIND_2_5_FOUND)
     target_link_libraries(${TARGET_NAME} PRIVATE ${TBBBIND_2_5_IMPORTED_TARGETS})

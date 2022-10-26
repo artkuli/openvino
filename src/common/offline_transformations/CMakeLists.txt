@@ -17,6 +17,10 @@ source_group("include" FILES ${PUBLIC_HEADERS})
 
 # Create static library
 
+if (CONAN_EXPORTED)
+    find_package(PugiXML REQUIRED)
+endif()
+
 add_library(${TARGET_NAME} STATIC ${LIBRARY_SRC} ${PUBLIC_HEADERS})
 
 if (CONAN_EXPORTED)
