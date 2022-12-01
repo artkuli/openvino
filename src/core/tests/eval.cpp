@@ -27,6 +27,7 @@
 #include "ngraph/op/cosh.hpp"
 #include "ngraph/op/erf.hpp"
 #include "ngraph/op/exp.hpp"
+#include "ngraph/op/fake_quantize.hpp"
 #include "ngraph/op/floor.hpp"
 #include "ngraph/op/gather.hpp"
 #include "ngraph/op/log.hpp"
@@ -50,6 +51,7 @@
 #include "ngraph/op/sin.hpp"
 #include "ngraph/op/sinh.hpp"
 #include "ngraph/op/softmax.hpp"
+#include "ngraph/op/softsign.hpp"
 #include "ngraph/op/sqrt.hpp"
 #include "ngraph/op/squeeze.hpp"
 #include "ngraph/op/tan.hpp"
@@ -58,6 +60,7 @@
 #include "ngraph/op/unsqueeze.hpp"
 #include "ngraph/runtime/host_tensor.hpp"
 #include "ngraph/validation_util.hpp"
+#include "sequnce_generator.hpp"
 #include "util/all_close_f.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_tools.hpp"
@@ -783,10 +786,10 @@ TEST(eval, evaluate_relu_2Ffprop_f32) {
     auto result = make_shared<HostTensor>();
     ASSERT_TRUE(fun->evaluate(
         {result},
-        {make_host_tensor<element::Type_t::f32>(Shape{2, 5}, {1, 8, -8, 17, -0.5, 0.1, 8.5, -8, 17, -0.5})}));
+        {make_host_tensor<element::Type_t::f32>(Shape{2, 5}, {1, 8, -8, 17, -0.5f, 0.1f, 8.5f, -8, 17, -0.5f})}));
     EXPECT_EQ(result->get_element_type(), element::f32);
     auto result_val = read_vector<float>(result);
-    vector<float> expec{1, 8, 0, 17, 0, 0.1, 8.5, 0, 17, 0};
+    vector<float> expec{1, 8, 0, 17, 0, 0.1f, 8.5f, 0, 17, 0};
     ASSERT_EQ(result_val, expec);
 }
 
@@ -1794,4 +1797,48 @@ TEST(eval, evaluate_softmax_8) {
     auto val = read_vector<float>(result_tensor);
     vector<float> out{0.5, 0.5};
     ASSERT_EQ(val, out);
+}
+
+TEST(eval, evaluate_softsign_9) {
+    auto arg = std::make_shared<ngraph::op::Parameter>(element::f32, PartialShape::dynamic());
+    auto softsign = std::make_shared<ngraph::op::v9::SoftSign>(arg);
+    auto fun = std::make_shared<Function>(OutputVector{softsign}, ParameterVector{arg});
+    ov::TensorVector result_tensor(1);
+    float input_vector[] = {1, -1, 2.5, -3.5};
+    ov::Tensor input{ov::element::f32, ov::Shape{4}, input_vector};
+
+    ASSERT_TRUE(fun->evaluate(result_tensor, ov::TensorVector{input}));
+    EXPECT_EQ(result_tensor[0].get_element_type(), ov::element::f32);
+    EXPECT_EQ(result_tensor[0].get_shape(), ov::Shape{4});
+
+    vector<float> out{0.5f, -0.5f, 0.714285f, -0.777777f};
+    auto result_data = result_tensor[0].data<float>();
+    for (size_t i = 0; i < result_tensor[0].get_size(); ++i)
+        EXPECT_NEAR(result_data[i], out[i], 1e-6F);
+}
+
+TEST(eval, evaluate_fake_quantize_dynamic_input) {
+    using namespace testing;
+    constexpr auto et = element::f32;
+
+    auto param = make_shared<op::Parameter>(et, PartialShape::dynamic());
+    auto in_low = op::v0::Constant::create(et, Shape{}, {0.f});
+    auto in_high = op::v0::Constant::create(et, Shape{}, {5.f});
+    auto out_low = op::v0::Constant::create(et, Shape{}, {2.f});
+    auto out_high = op::v0::Constant::create(et, Shape{}, {4.f});
+
+    auto op = make_shared<op::v0::FakeQuantize>(param, in_low, in_high, out_low, out_high, 4);
+    auto f = make_shared<Function>(OutputVector{op}, ParameterVector{param});
+
+    const auto exp_shape = Shape{1, 3, 2};
+    std::vector<float> input_data;
+    std::generate_n(std::back_inserter(input_data), shape_size(exp_shape), ov::SeqGen<float>(0.f));
+
+    auto result = make_shared<HostTensor>();
+    ASSERT_TRUE(f->evaluate({result}, {make_host_tensor<et>(exp_shape, input_data)}));
+
+    EXPECT_EQ(result->get_element_type(), et);
+    EXPECT_EQ(result->get_shape(), exp_shape);
+    EXPECT_THAT(read_vector<float>(result),
+                Pointwise(FloatEq(), std::vector<float>{2.f, 2.6666667f, 2.6666667f, 3.3333333f, 3.3333333f, 4.f}));
 }

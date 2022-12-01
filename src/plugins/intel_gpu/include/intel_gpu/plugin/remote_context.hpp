@@ -18,6 +18,10 @@
 # define NOMINMAX
 #endif
 
+#ifndef OV_GPU_USE_OPENCL_HPP
+#define OV_GPU_USE_OPENCL_HPP
+#endif
+
 #ifdef _WIN32
 # include <gpu/gpu_context_api_dx.hpp>
 #else
@@ -30,7 +34,6 @@
 #include <atomic>
 
 namespace ov {
-namespace runtime {
 namespace intel_gpu {
 class RemoteAllocator;
 
@@ -64,11 +67,13 @@ public:
     std::shared_ptr<InferenceEngine::RemoteContext> getContext() const noexcept;
     InferenceEngine::LockedMemory<void> buffer() noexcept;
     InferenceEngine::LockedMemory<const void> cbuffer() const noexcept;
-    InferenceEngine::LockedMemory<void> rwmap()noexcept;
+    InferenceEngine::LockedMemory<void> rwmap() noexcept;
     InferenceEngine::LockedMemory<const void> rmap() const noexcept;
-    InferenceEngine::LockedMemory<void> wmap()noexcept;
+    InferenceEngine::LockedMemory<void> wmap() noexcept;
     const std::shared_ptr<InferenceEngine::IAllocator> &getAllocator() const noexcept;
     void *getHandle() const noexcept { return _handle; }
+
+    void reinterpret(cldnn::layout new_layout);
 
     bool is_allocated() const noexcept;
     bool is_locked() const noexcept;
@@ -77,6 +82,8 @@ public:
 protected:
     static RemoteAllocator m_allocator;
     std::weak_ptr<InferenceEngine::gpu::ClContext> m_context;
+    // retain engine ptr to ensure that memory object can be released properly in cases when RemoteContext if deleted before RemoteTensor
+    std::shared_ptr<cldnn::engine> m_engine;
     cldnn::stream& m_stream;
 
     // constructor stuff
@@ -112,8 +119,8 @@ public:
                              cldnn::shared_surface surf = 0,
                              uint32_t plane = 0,
                              RemoteBlobImpl::BlobType mem_type = RemoteBlobImpl::BlobType::BT_BUF_INTERNAL)
-        : _impl(context, stream, layout, mem, surf, plane, mem_type)
-        , TpublicAPI(desc) {}
+        : TpublicAPI(desc)
+        , _impl(context, stream, layout, mem, surf, plane, mem_type) {}
 
     void allocate() noexcept override {
         try {
@@ -264,6 +271,9 @@ public:
             InferenceEngine::ParamMap params = {{GPU_PARAM_KEY(SHARED_MEM_TYPE), GPU_PARAM_VALUE(USM_HOST_BUFFER)}};
             _usm_host_blob = std::dynamic_pointer_cast<InferenceEngine::gpu::USMBlob>(_context->CreateBlob(td, params));
             _usm_host_blob->allocate();
+            if (!getBlobImpl(_usm_host_blob.get())->is_allocated()) {
+                return nullptr;
+            }
             return _usm_host_blob->get();
         } catch (...) {
             return nullptr;
@@ -583,5 +593,4 @@ inline ExecutionContextImpl* getContextImpl(InferenceEngine::gpu::ClContext::Ptr
 }
 
 }  // namespace intel_gpu
-}  // namespace runtime
 }  // namespace ov

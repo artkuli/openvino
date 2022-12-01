@@ -3,8 +3,10 @@
 //
 
 #include <signal.h>
+#include <setjmp.h>
+
 #include <fstream>
-#include "transformations/convert_precision.hpp"
+#include <thread>
 
 #ifdef _WIN32
 #include <process.h>
@@ -12,6 +14,7 @@
 
 #include "openvino/core/preprocess/pre_post_process.hpp"
 #include "openvino/pass/serialize.hpp"
+#include "transformations/convert_precision.hpp"
 
 #include "common_test_utils/graph_comparator.hpp"
 
@@ -19,14 +22,13 @@
 
 #include "common_test_utils/file_utils.hpp"
 #include "common_test_utils/crash_handler.hpp"
-#include <common_test_utils/ov_tensor_utils.hpp>
+#include "common_test_utils/ov_tensor_utils.hpp"
 #include "functional_test_utils/skip_tests_config.hpp"
 
 #include "shared_test_classes/base/ov_subgraph.hpp"
 #include "shared_test_classes/base/utils/generate_inputs.hpp"
 #include "shared_test_classes/base/utils/compare_results.hpp"
 
-#include <setjmp.h>
 
 namespace ov {
 namespace test {
@@ -39,9 +41,9 @@ std::ostream& operator <<(std::ostream& os, const InputShape& inputShape) {
 void SubgraphBaseTest::run() {
     bool isCurrentTestDisabled = FuncTestUtils::SkipTestsConfig::currentTestIsDisabled();
 
-    LayerTestsUtils::PassRate::Statuses status = isCurrentTestDisabled ?
-        LayerTestsUtils::PassRate::Statuses::SKIPPED :
-        LayerTestsUtils::PassRate::Statuses::CRASHED;
+    ov::test::utils::PassRate::Statuses status = isCurrentTestDisabled ?
+         ov::test::utils::PassRate::Statuses::SKIPPED :
+         ov::test::utils::PassRate::Statuses::CRASHED;
     summary.setDeviceName(targetDevice);
     summary.updateOPsStats(function, status);
 
@@ -78,25 +80,24 @@ void SubgraphBaseTest::run() {
                     throw std::runtime_error("Incorrect target static shape: " +
                                              CommonTestUtils::vec2str(targetStaticShapeVec) + " " + ex.what());
                 }
-                infer();
                 validate();
             }
-            status = LayerTestsUtils::PassRate::Statuses::PASSED;
+            status = ov::test::utils::PassRate::Statuses::PASSED;
         } catch (const std::exception& ex) {
-            status = LayerTestsUtils::PassRate::Statuses::FAILED;
+            status = ov::test::utils::PassRate::Statuses::FAILED;
             errorMessage = ex.what();
         } catch (...) {
-            status = LayerTestsUtils::PassRate::Statuses::FAILED;
+            status = ov::test::utils::PassRate::Statuses::FAILED;
             errorMessage = "Unknown failure occurred.";
         }
         summary.updateOPsStats(function, status);
-        if (status != LayerTestsUtils::PassRate::Statuses::PASSED) {
+        if (status != ov::test::utils::PassRate::Statuses::PASSED) {
             GTEST_FATAL_FAILURE_(errorMessage.c_str());
         }
     } else if (jmpRes == CommonTestUtils::JMP_STATUS::anyError) {
         IE_THROW() << "Crash happens";
     } else if (jmpRes == CommonTestUtils::JMP_STATUS::alarmErr) {
-        summary.updateOPsStats(function, LayerTestsUtils::PassRate::Statuses::HANGED);
+        summary.updateOPsStats(function, ov::test::utils::PassRate::Statuses::HANGED);
         IE_THROW() << "Crash happens";
     }
 }
@@ -144,7 +145,9 @@ void SubgraphBaseTest::query_model() {
     for (auto&& res : queryNetworkResult) {
         actual.insert(res.first);
     }
-    ASSERT_EQ(expected, actual);
+    if (expected != actual) {
+        IE_THROW() << "Expected and actual are different";
+    }
 }
 
 void SubgraphBaseTest::compare(const std::vector<ov::Tensor>& expected,
@@ -164,6 +167,7 @@ void SubgraphBaseTest::compare(const std::vector<ov::Tensor>& expected,
                 }
             }
             auto it = compareMap.find(inputNode->get_type_info());
+            ASSERT_NE(it, compareMap.end());
             it->second(inputNode, i, expected[j], actual[j], abs_threshold, rel_threshold);
         }
     }
@@ -198,6 +202,14 @@ void SubgraphBaseTest::compile_model() {
     if (functionRefs == nullptr) {
         functionRefs = ov::clone_model(*function);
     }
+
+    // Within the test scope we don't need any implicit bf16 optimisations, so let's run the network as is.
+    #if !(defined(__arm__) || defined(_M_ARM) || defined(__aarch64__) || defined(_M_ARM64))
+        if (targetDevice == CommonTestUtils::DEVICE_CPU && !configuration.count(InferenceEngine::PluginConfigParams::KEY_ENFORCE_BF16)) {
+                configuration.insert({InferenceEngine::PluginConfigParams::KEY_ENFORCE_BF16, InferenceEngine::PluginConfigParams::NO});
+        }
+    #endif
+
     compiledModel = core->compile_model(function, targetDevice, configuration);
 }
 
@@ -222,6 +234,7 @@ void SubgraphBaseTest::generate_inputs(const std::vector<ov::Shape>& targetInput
                     }
                 }
                 auto it = inputMap.find(nodePtr->get_type_info());
+                ASSERT_NE(it, inputMap.end());
                 for (size_t port = 0; port < nodePtr->get_input_size(); ++port) {
                     if (nodePtr->get_input_node_ptr(port)->shared_from_this() == inputNode->shared_from_this()) {
                         inputs.insert({param, it->second(nodePtr, port, param->get_element_type(), *itTargetShape++)});
@@ -302,6 +315,7 @@ std::vector<ov::Tensor> SubgraphBaseTest::calculate_refs() {
 }
 
 std::vector<ov::Tensor> SubgraphBaseTest::get_plugin_outputs() {
+    infer();
     auto outputs = std::vector<ov::Tensor>{};
     for (const auto& output : function->outputs()) {
         outputs.push_back(inferRequest.get_tensor(output));
@@ -310,8 +324,17 @@ std::vector<ov::Tensor> SubgraphBaseTest::get_plugin_outputs() {
 }
 
 void SubgraphBaseTest::validate() {
-    auto expectedOutputs = calculate_refs();
-    const auto& actualOutputs = get_plugin_outputs();
+    std::vector<ov::Tensor> expectedOutputs, actualOutputs;
+
+#ifndef NDEBUG
+    actualOutputs = get_plugin_outputs();
+    expectedOutputs = calculate_refs();
+#else
+    std::thread t_device([&]{ actualOutputs = get_plugin_outputs(); });
+    std::thread t_ref([&]{ expectedOutputs = calculate_refs(); });
+    t_device.join();
+    t_ref.join();
+#endif
 
     if (expectedOutputs.empty()) {
         return;

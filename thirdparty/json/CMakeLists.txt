@@ -34,3 +34,6 @@ else()
             ARCHIVE DESTINATION lib EXCLUDE_FROM_ALL)
 endif()
 
+# suppress shadowing names warning
+set(JSON_SystemInclude ON CACHE BOOL "" FORCE)
+add_subdirectory(nlohmann_json EXCLUDE_FROM_ALL)
