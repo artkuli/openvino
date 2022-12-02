@@ -300,11 +300,13 @@ endif()
 #
 
 if(ENABLE_SAMPLES)
-    add_subdirectory(json)
-
-    # this is required only because of VPUX plugin reused this
-    openvino_developer_export_targets(COMPONENT openvino_common
-                                      TARGETS nlohmann_json)
+    if (CONAN_EXPORTED)
+        find_package(nlohmann_json)
+    else()
+        add_subdirectory(json)
+        # this is required only because of VPUX plugin reused this
+        openvino_developer_export_targets(COMPONENT openvino_common TARGETS nlohmann_json)
+    endif()
 endif()
 
 #

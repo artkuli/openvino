@@ -26,7 +26,7 @@ class OpenvinoConan(ConanFile):
 
     def requirements(self):
         # Don't need nlohmann_json because json-schema-validator requires it
-        # self.requires("json-schema-validator/2.1.0")
+        self.requires("nlohmann_json/3.11.2")
         self.requires("pugixml/1.11")
         # self.requires("zlib/1.2.12")
         self.requires("onnx/1.11.0")
