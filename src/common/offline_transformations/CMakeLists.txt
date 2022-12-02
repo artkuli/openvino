@@ -22,16 +22,15 @@ source_group("include" FILES ${PUBLIC_HEADERS})
 
 # Create static library
 
-if (CONAN_EXPORTED)
-    find_package(PugiXML REQUIRED)
-endif()
+#if (CONAN_EXPORTED)
+#    find_package(PugiXML REQUIRED)
+#endif()
 
 add_library(${TARGET_NAME} STATIC ${LIBRARY_SRC} ${PUBLIC_HEADERS})
 
-if (CONAN_EXPORTED)
-        find_package(nlohmann_json)
-        find_package(nlohmann_json_schema_validator)
-endif()
+#if (CONAN_EXPORTED)
+#        find_package(nlohmann_json)
+#endif()
 
 target_link_libraries(${TARGET_NAME} PRIVATE openvino::runtime::dev openvino::itt openvino::pugixml ngraph::reference
                                              openvino::runtime)

@@ -158,9 +158,9 @@ macro(ov_add_frontend)
     # Disable all warnings for generated code
     set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES COMPILE_OPTIONS -w GENERATED TRUE)
 
-    if (CONAN_EXPORTED)
-        find_package(PugiXML REQUIRED)
-    endif()
+    #if (CONAN_EXPORTED)
+    #    find_package(PugiXML REQUIRED)
+    #endif()
     # Create library
     add_library(${TARGET_NAME} ${LIBRARY_SRC} ${LIBRARY_HEADERS} ${LIBRARY_PUBLIC_HEADERS} ${PROTO_SRCS} ${PROTO_HDRS})
 

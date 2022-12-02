@@ -49,9 +49,9 @@ add_cpplint_target(${TARGET_NAME}_obj_cpplint FOR_TARGETS ${TARGET_NAME}_obj)
 add_library(${TARGET_NAME} STATIC EXCLUDE_FROM_ALL
     $<TARGET_OBJECTS:${TARGET_NAME}_obj>)
 
-if (CONAN_EXPORTED)
-    find_package(PugiXML REQUIRED)
-endif()
+#if (CONAN_EXPORTED)
+#    find_package(PugiXML REQUIRED)
+#endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC openvino::runtime
                                      PRIVATE openvino::pugixml openvino::itt openvino::runtime::dev)

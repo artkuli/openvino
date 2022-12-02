@@ -15,10 +15,10 @@ class OpenvinoConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
-    generators = ["cmake", "cmake_find_package", "CMakeDeps", "cmake_paths"]
+    generators = ["cmake", "cmake_find_package", "CMakeDeps", "cmake_paths", "PkgConfigDeps"]
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "cmake/*",  "ngraph/*", "scripts/*", "src/*", "thirdparty/*", "tools/*", "samples/*", "docs/*", "licensing/*", "tests/*", "CMakeLists.txt"
+    exports_sources = "cmake/*",  "ngraph/*", "scripts/*", "src/*", "thirdparty/*", "tools/*", "samples/*", "docs/*", "licensing/*", "tests/*", "CMakeLists.txt", "LICENSE"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -26,9 +26,9 @@ class OpenvinoConan(ConanFile):
 
     def requirements(self):
         # Don't need nlohmann_json because json-schema-validator requires it
-        self.requires("json-schema-validator/2.1.0")
+        # self.requires("json-schema-validator/2.1.0")
         self.requires("pugixml/1.11")
-        self.requires("zlib/1.2.12")
+        # self.requires("zlib/1.2.12")
         self.requires("onnx/1.11.0")
 
     def build(self):

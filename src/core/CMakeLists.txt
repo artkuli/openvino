@@ -59,9 +59,9 @@ ov_install_static_lib(ov_core_dev ${OV_CPACK_COMP_CORE})
 # Create static or shared library depending on BUILD_SHARED_LIBS
 #
 
-if (CONAN_EXPORTED)
-    find_package(PugiXML REQUIRED)
-endif()
+#if (CONAN_EXPORTED)
+#    find_package(PugiXML REQUIRED)
+#endif()
 
 add_library(ngraph_obj OBJECT ${LIBRARY_SRC} ${PUBLIC_HEADERS})
 

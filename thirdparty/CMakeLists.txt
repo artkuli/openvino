@@ -44,10 +44,7 @@ if(ENABLE_SAMPLES OR ENABLE_TESTS)
             endif()
         endif()
     endif()
-endif()
-if (CONAN_EXPORTED) 
-    find_package(zlib)
-else()
+
     if(NOT zlib_FOUND)
         add_subdirectory(zlib EXCLUDE_FROM_ALL)
     endif()
@@ -57,26 +54,6 @@ endif()
 # Pugixml
 #
 
-if (CONAN_EXPORTED)
-    find_package(PugiXML REQUIRED)
-else()
-    if(ENABLE_SYSTEM_PUGIXML)
-        find_package(PugiXML REQUIRED)
-        set_target_properties(pugixml PROPERTIES IMPORTED_GLOBAL ON)
-        add_library(pugixml::static ALIAS pugixml)
-    else()
-        function(ie_build_pugixml)
-            function(ie_build_pugixml_static)
-                set(BUILD_SHARED_LIBS OFF)
-                add_subdirectory(pugixml EXCLUDE_FROM_ALL)
-            endfunction()
-            ie_build_pugixml_static()
-            set_property(TARGET pugixml-static PROPERTY EXPORT_NAME pugixml)
-            openvino_developer_export_targets(COMPONENT openvino_common TARGETS pugixml::static)
-            ov_install_static_lib(pugixml-static openvino_common)
-        endfunction()
-        ie_build_pugixml()
-    endif()
 if(ENABLE_SYSTEM_PUGIXML)
     find_package(PkgConfig QUIET)
     # try system pugixml first
@@ -184,6 +161,7 @@ if(NOT TARGET openvino::pugixml)
 
     ie_build_pugixml()
 endif()
+
 #
 # Fluid, G-API, OpenCV HAL
 #
@@ -314,21 +292,13 @@ endif()
 #
 
 if(ENABLE_OV_ONNX_FRONTEND)
-     add_subdirectory(onnx)
+    add_subdirectory(onnx)
 endif()
 
 #
 # nlohmann json
 #
 
-add_subdirectory(json)
-if (NOT CONAN_EXPORTED)
-    openvino_developer_export_targets(COMPONENT openvino_common
-                                  TARGETS nlohmann_json nlohmann_json_schema_validator)
-
-    ov_install_static_lib(nlohmann_json::nlohmann_json openvino_common)
-    ov_install_static_lib(nlohmann_json_schema_validator openvino_common)
-endif()
 if(ENABLE_SAMPLES)
     add_subdirectory(json)
 
