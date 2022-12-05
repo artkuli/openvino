@@ -39,7 +39,6 @@ function(add_graph_transformer_target TARGET_NAME STATIC_IE)
     target_include_directories(${TARGET_NAME}
         PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-
     target_include_directories(${TARGET_NAME}
         PUBLIC
             $<TARGET_PROPERTY:openvino::pugixml,INTERFACE_INCLUDE_DIRECTORIES>

@@ -30,7 +30,6 @@ add_library(${TARGET_NAME}_obj OBJECT EXCLUDE_FROM_ALL
 
 ie_faster_build(${TARGET_NAME}_obj
     PCH PRIVATE "src/precomp.hpp")
-
 target_include_directories(${TARGET_NAME}_obj PRIVATE
     ${PUBLIC_HEADERS_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/src

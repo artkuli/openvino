@@ -27,8 +27,8 @@ class OpenvinoConan(ConanFile):
     def requirements(self):
         # Don't need nlohmann_json because json-schema-validator requires it
         self.requires("nlohmann_json/3.11.2")
-        self.requires("pugixml/1.11")
-        # self.requires("zlib/1.2.12")
+        #self.requires("pugixml/1.13")
+        self.requires("zlib/1.2.12")
         self.requires("onnx/1.11.0")
 
     def build(self):
@@ -37,7 +37,7 @@ class OpenvinoConan(ConanFile):
         cmake.definitions["ENABLE_INTEL_CPU"] = "ON"
         cmake.definitions["ENABLE_INTEL_GPU"]="OFF" 
         cmake.definitions["ENABLE_INTEL_GNA"]="OFF" 
-        cmake.definitions["ENABLE_INTEL_MYRIAD"]="OFF" 
+        cmake.definitions["ENABLE_INTEL_MYRIAD"]="ON" 
         cmake.definitions["ENABLE_OPENCV"]="OFF" 
         cmake.definitions["ENABLE_TESTS"]="OFF" 
         cmake.definitions["ENABLE_BEH_TESTS"]="OFF" 

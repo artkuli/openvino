@@ -38,7 +38,6 @@ target_include_directories(${TARGET_NAME} PUBLIC
     $<BUILD_INTERFACE:${OpenVINO_SOURCE_DIR}/src/inference/include/ie>)
 
 if (CONAN_EXPORTED)
-    #find_package(PugiXML REQUIRED)
     target_link_libraries(${TARGET_NAME} PRIVATE ngraph_reference
                                                 ngraph_builders
                                                 ov_shape_inference
